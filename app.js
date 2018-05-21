@@ -14,7 +14,12 @@ const { timer } = require('rxjs/observable/timer');
 const { concat } = require('rxjs/observable/concat');
 const { race } = require('rxjs/observable/race');
 // Transformation
-const { mapTo, pairwise, take, startWith, scan } = require('rxjs/operators');
+const {
+  mapTo, pairwise, take,
+  startWith, scan, merge,
+  pipe, skip, first,
+  last, throttle, zip,
+  forkJoin } = require('rxjs/operators');
 
 // non rxjs things
 const readline = require('readline');
@@ -119,11 +124,51 @@ If error is thrown firstly, none of observables wins.*/
 
 /* 4. startWith - begin emition with specified value/set of values */
 //emit ('World!', 'Goodbye', 'World!')
-const source = of('World!', 'Goodbye', 'World!');
-//start with 'Hello', concat current string to previous
-const example = source.pipe(
-  scan((acc, curr) => `${acc} ${curr}`),
-  startWith('Hello')
-);
-//output: -3, -2, -1, 0, 1, 2....
-const subscribe = example.subscribe(val => console.log(val));
+// const source = of('World!', 'Goodbye', 'World!');
+// //start with 'Hello', concat current string to previous
+// const example = source.pipe(
+//   startWith('Hello'),
+//   scan((acc, curr) => `${acc} ${curr}`)
+// );
+// //output: -3, -2, -1, 0, 1, 2....
+// const subscribe = example.subscribe(val => console.log(val));
+
+/* 5. merge - combines few observables and don't cares about order in which values are produced */
+// interval(1000).pipe(
+//   merge(interval(2000)),
+//   merge(interval(1500))).subscribe(subscribeObj);
+
+/* 6. */
+
+// WAYS TO FILTER OBSERVABLES
+
+/* 1. take - you interested only in certain number of emmission of values. */
+// interval(500).pipe(take(5)).subscribe(subscribeObj)
+
+/* 2. skip - you interested only in certain number of emmission of values after n. So
+you skip first n values. */
+// interval(500).pipe(skip(5)).subscribe(subscribeObj)
+
+/* 3. first / last */
+// interval(1000).pipe(first(num => num === 2)).subscribe(subscribeObj)
+// from([1,2,3,4,5]).pipe(last(
+//     v => v > 4,
+//     v => `The highest emitted number was ${v}`
+// )).subscribe(subscribeObj)
+
+/* 4. throttle - wait for 2 second and then emit latest value of those which were emmited. */
+// const source = interval(1000);
+// //throttle for 2 seconds, emit latest value
+// const example = source.pipe(throttle(val => timer(2000))).subscribe(subscribeObj);
+
+/* 5. zip - if 2 observables have same ammount of value it combines them like pairwise [1,1,2,2,3,3] into single array */
+// const yin   = of('peanut butter', 'wine','rainbows')
+// const yang  = of('jelly', 'cheese', 'unicorns')
+//
+// yin.pipe(zip(yang)).subscribe(subscribeObj)
+
+/* 6. forkJoin - */
+const yin   = of('peanut butter', 'wine','rainbows')
+const yang  = of('jelly', 'cheese', 'unicorns')
+
+yin.pipe(forkJoin(yang)).subscribe(subscribeObj)
